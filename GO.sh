@@ -34,8 +34,9 @@ mkdir output_dir
 # VARIABLES:
 ME=$(whoami)
 DEST=$(echo './original_Rscripts')
-ENV_NAME=$(echo 'Teberculosis_pipeline_R_packages_'$ME)
+#ENV_NAME=$(echo 'Teberculosis_pipeline_R_packages_'$ME)
 GITHUB_NAME=$(echo 'https://github.com/tomsumner/Latency_Model_Comparison_Public/')
+read -p  "Enter conda environment name: " ENV_NAME
 #echo $ENV_NAME
 APP1=$(echo "regular")
 APP2=$(echo "modified")
