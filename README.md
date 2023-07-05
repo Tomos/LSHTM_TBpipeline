@@ -26,7 +26,6 @@ The pipeline initiated by running the GO.sh script from the command line with:
 
 This script performs the following tasks:
 - Uses the check_mod() function in the module_check.sh script (in the scripts directory) to check that anaconda3 and R are available
-	* I created the module_check_test.sh with a few tests of the check_mod() function to highlight that I am able to do this (I would create more complete tests with more time). 
 - Creates an output directory ('*output_dir*') where the output files from the SBATCH jobs will be stored (useful for debugging).
 - If Anaconda3 and R are available, the pipeline progresses to create a conda environment with the name Teberculosis_pipeline_R_packages_'*username*'
 	* The pipeline will only create the environment if it does not already exist
