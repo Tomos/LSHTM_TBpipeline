@@ -32,9 +32,9 @@ This script performs the following tasks:
 	* This part of the code can be modified easily to prompt the user to enter the name of the conda env (commented out at present)
 - Sbatch job 1: checks the conda environment for the R packages: deSolve, ggplot2, reshape2, stats and FME using the pkg_check.sh and Package_check.R
 - Sbatch job 2 (with dependancy on job 1): clones the GitHub repostiroy from: https://github.com/tomsumner/Latency_Model_Comparison_Public/
-- Sbatch job 4 (with dependancy on job 2): Move modified model 3 into the original_Rscripts directory
-- sbatch job 5 (with dependancy on job 4): Runs Intervention Analysis with regular models
-- sbatch job 6 (with dependancy on job 5): Runs Intervention Analysis with modified model 3.
+- Sbatch job 4 (with dependancy on job 2): moves modified model 3 into the original_Rscripts directory
+- sbatch job 5 (with dependancy on job 4): runs Intervention Analysis with regular models
+- sbatch job 6 (with dependancy on job 5): runs Intervention Analysis with modified model 3.
 
 To apply the pipeline to different models (assumption: provided in the original_Rscripts directory), the model variables in the GO.sh script would need to be changed to the name of the new model(s).
 
