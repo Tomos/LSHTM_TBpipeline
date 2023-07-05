@@ -22,7 +22,7 @@ This pipeline was developped on the HPC cluster an Northern Arizona University (
 
 The pipeline initiated by running the GO.sh script from the command line with:
 
-	'*>bash GO.sh*'
+	>bash GO.sh
 
 This script performs the following tasks:
 - Uses the check_mod() function in the module_check.sh script (in the scripts directory) to check that anaconda3 and R are available
