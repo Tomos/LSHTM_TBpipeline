@@ -64,27 +64,38 @@ if [ "$ac_value" == 0 ] && [ "$rc_value" == 0 ]; then
     if ! conda env list | grep -q "\<$ENV_NAME\>"; then
         echo "Conda environment: $ENV_NAME does not exists; creating environment."
 	conda create -y -n $ENV_NAME
-    elif conda env list | grep -q "\<$ENV_NAME\>"; then
-	echo "Conda environent: $ENV_NAME detected; activating environment."
+    else
+        echo "Conda environment: $ENV_NAME detected"
+    fi
+
+    if conda env list | grep -q "\<$ENV_NAME\>"; then
+	echo "Conda environent: Given activation of $ENV_NAME, running jobs."
 
 	# R script that loads necessary R packages
-	echo "Checking $ENV_NAME for the R packages: deSolve, ggplot2, reshape2, stats, and FME."
-	echo "Are R packages installed? if installed, they are loaded. If not, the packages will be installed."
+	echo "Job 1: checking $ENV_NAME for the R packages: deSolve, ggplot2, reshape2, stats, and FME."
+	echo "       If installed, they are loaded. If not, the packages will be installed."
+
 	job_id1=$(sbatch scripts/pkg_check.sh $ENV_NAME| awk '{ print $4 }')
 
+	echo "Job 2: cloning files from $GITHUB_NAME to $DEST "
+	#job_id2=$(sbatch scripts/clone_rscripts.sh $GITHUB_NAME $DEST| awk '{ print $4 }')
 	job_id2=$(sbatch --dependency=afterok:${job_id1} scripts/clone_rscripts.sh $GITHUB_NAME $DEST| awk '{ print $4 }')
 
-#	job_id3=$(sbatch --dependency=afterok:${job_id2} scripts/run_og_pipeline.sh $ENV_NAME $DEST $MOD1_CUM $MOD2_CUM $MOD3_CUM $MOD1 $MOD2 $MOD3| awk '{ print $4 }')
+	#echo "Job 3: Running original R pipeline."
+	#job_id3=$(sbatch --dependency=afterok:${job_id2} scripts/run_og_pipeline.sh $ENV_NAME $DEST $MOD1_CUM $MOD2_CUM $MOD3_CUM $MOD1 $MOD2 $MOD3| awk '{ print $4 }')
 
+	echo "Job 3: Moving custom Model 3 into the same directory as the scripts from $GITHUB_NAME in $DEST."
+	#job_id4=$(sbatch scripts/mv_custom_model.sh| awk '{ print $4 }')
 	job_id4=$(sbatch --dependency=afterok:${job_id2} scripts/mv_custom_model.sh| awk '{ print $4 }')
 
+	echo "Job 4: Run regular intervention."
 	job_id5=$(sbatch --dependency=afterok:${job_id4} scripts/run_regular_intervention.sh $ENV_NAME $DEST $MOD1_CUM $MOD2_CUM $MOD3_CUM $MOD1 $MOD2 $MOD3| awk '{ print $4 }')
 
+	echo "Job 5: Run custom intervention."
 	job_id6=$(sbatch --dependency=afterok:${job_id5} scripts/run_custom_intervention.sh $ENV_NAME $DEST $MOD1_CUM $MOD2_CUM $MOD3_CUM $MOD1 $MOD2 $MOD3_MOD | awk '{ print $4 }')
 
-
    else
-	echo "Env error 1"
+	echo "Env error 2"
     fi
 fi
 
