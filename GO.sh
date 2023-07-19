@@ -7,11 +7,11 @@ source ./scripts/module_check.sh
 
 anaconda3_check=$(check_mod anaconda3)
 ac_value=$?
-echo $anaconda3_check
+#echo $anaconda3_check
 #echo $ac_value
 R_check=$(check_mod R)
 rc_value=$?
-echo $R_check
+#echo $R_check
 #echo $rc_value
 
 # SOME UNIT TESTS TO SHOW THAT THE check_mod FUNCTION BEHAVES AS EXPECTED:
@@ -28,7 +28,6 @@ module load R
 # CREATE OUTPUT_DIR, WHERE SBATCH OUTPUT FILES WILL LIVE:
 rm -r output_dir
 mkdir output_dir
-
 
 
 # VARIABLES:
@@ -65,37 +64,38 @@ if [ "$ac_value" == 0 ] && [ "$rc_value" == 0 ]; then
         echo "Conda environment: $ENV_NAME does not exists; creating environment."
 	conda create -y -n $ENV_NAME
     else
-        echo "Conda environment: $ENV_NAME detected"
+        echo "Conda environment: $ENV_NAME detected and activated" 
+	conda activate $ENV_NAME
     fi
 
     if conda env list | grep -q "\<$ENV_NAME\>"; then
 	echo "Conda environent: Given activation of $ENV_NAME, running jobs."
 
 	# R script that loads necessary R packages
-	echo "Job 1: checking $ENV_NAME for the R packages: deSolve, ggplot2, reshape2, stats, and FME."
-	echo "       If installed, they are loaded. If not, the packages will be installed."
+	echo "Job 1: checking $ENV_NAME for the R packages: deSolve, ggplot2, reshape2, stats, and FME"
+	echo "       If installed, they are loaded. If not, the packages will be installed"
 
-	job_id1=$(sbatch scripts/pkg_check.sh $ENV_NAME| awk '{ print $4 }')
+	job_id1=$(sbatch scripts/pkg_check.sh --begin=now+5seconds $ENV_NAME| awk '{ print $4 }')
 
-	echo "Job 2: cloning files from $GITHUB_NAME to $DEST "
+	echo "Job 2: cloning files from $GITHUB_NAME to $DEST"
 	#job_id2=$(sbatch scripts/clone_rscripts.sh $GITHUB_NAME $DEST| awk '{ print $4 }')
-	job_id2=$(sbatch --dependency=afterok:${job_id1} scripts/clone_rscripts.sh $GITHUB_NAME $DEST| awk '{ print $4 }')
+	job_id2=$(sbatch --dependency=afterok:${job_id1} --begin=now+10seconds scripts/clone_rscripts.sh $GITHUB_NAME $DEST| awk '{ print $4 }')
 
-	#echo "Job 3: Running original R pipeline."
+	#echo "Job 3: Running original R pipeline"
 	#job_id3=$(sbatch --dependency=afterok:${job_id2} scripts/run_og_pipeline.sh $ENV_NAME $DEST $MOD1_CUM $MOD2_CUM $MOD3_CUM $MOD1 $MOD2 $MOD3| awk '{ print $4 }')
 
-	echo "Job 3: Moving custom Model 3 into the same directory as the scripts from $GITHUB_NAME in $DEST."
+	echo "Job 3: Moving custom Model 3 into the same directory as the scripts from $GITHUB_NAME in $DEST"
 	#job_id4=$(sbatch scripts/mv_custom_model.sh| awk '{ print $4 }')
-	job_id4=$(sbatch --dependency=afterok:${job_id2} scripts/mv_custom_model.sh| awk '{ print $4 }')
+	job_id4=$(sbatch --dependency=afterok:${job_id2} --begin=now+15seconds scripts/mv_custom_model.sh| awk '{ print $4 }')
 
-	echo "Job 4: Run regular intervention."
+	echo "Job 4: Run regular R scripts"
 	job_id5=$(sbatch --dependency=afterok:${job_id4} scripts/run_regular_intervention.sh $ENV_NAME $DEST $MOD1_CUM $MOD2_CUM $MOD3_CUM $MOD1 $MOD2 $MOD3| awk '{ print $4 }')
 
-	echo "Job 5: Run custom intervention."
+	echo "Job 5: Run modified R scripts"
 	job_id6=$(sbatch --dependency=afterok:${job_id5} scripts/run_custom_intervention.sh $ENV_NAME $DEST $MOD1_CUM $MOD2_CUM $MOD3_CUM $MOD1 $MOD2 $MOD3_MOD | awk '{ print $4 }')
 
    else
-	echo "Env error 2"
+	echo "Either Anaconda3 or R not installed, please install prior to running the pipeline."
     fi
 fi
 
